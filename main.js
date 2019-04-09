@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, session} = require('electron')
+const { app, BrowserWindow, session, dialog } = require('electron')
 require('electron-reload')(__dirname);
 const windowStateKeeper = require('electron-window-state');
 console.log('main.js executing');
@@ -47,6 +47,14 @@ app.on('browser-window-focus', function(e){
   console.log('browser-window-focus');
 });
 
+function showDialog(){
+  dialog.showOpenDialog({
+    defaultPath: '/Users/Onetec/Downloads/',
+    buttonLabel: 'Select logo'
+  }, (onePath) => {
+    console.log(onePath)
+  });
+}
 function createWindow () {
   console.log('creating mainWindow');
 
@@ -75,6 +83,9 @@ function createWindow () {
       session: appSession
     }
   })
+  setTimeout(() => {
+    showDialog();
+  }, 3000);
   let mainSession = mainWindow.webContents.session
   console.log('mainSession ' + mainSession);
   winState.manage(mainWindow)
