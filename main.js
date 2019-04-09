@@ -100,11 +100,32 @@ function createWindow () {
 
   console.log('Loading index.html into mainWindow')
   // and load the index.html of the app.
-  /*mainWindow.loadFile('index.html')
+  mainWindow.loadFile('index.html')
   childWindow.loadFile('index_child.html')
-  secdWindow.loadFile('index_child.html')*/
+  secdWindow.loadFile('index_child.html')
 
-  mainWindow.loadURL('https://github.com')
+  // Listen for download
+  mainSession.on('will-download', (e, downloadItem, webContets) => {
+    let file = downloadItem.getFilename();
+    downloadItem.setSavePath('downloads/'+file);
+    console.log('will download' + downloadItem.getFilename())
+
+    let size = downloadItem.getTotalBytes();
+    downloadItem.on('updated', (e, state) => {
+      // get download progress
+      let progress = Math.round(downloadItem.getReceivedBytes() / size * 100)
+
+      if (state === 'progressing') {
+        console.log(progress + '%')
+      }
+    });
+    downloadItem.once('done', (e, state)=> {
+      if (state === 'completed') {
+        console.log('DOWNLOAD COMPLETEDDDDDDDDDDDDDDDDDDDDDD')
+      }
+    })
+  })
+  //mainWindow.loadURL('https://github.com')
   mainSession.cookies.set({
     url: 'https://myapp.com',
     name: 'cookie1',
