@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const {app, BrowserWindow, session} = require('electron')
 require('electron-reload')(__dirname);
 const windowStateKeeper = require('electron-window-state');
 console.log('main.js executing');
@@ -50,6 +50,8 @@ app.on('browser-window-focus', function(e){
 function createWindow () {
   console.log('creating mainWindow');
 
+  let appSession = session.fromPartition('persist:partition1') // Estas sesiones que no son las de por defecto no se persisten por defecto. Para que se persistan su nombre debe empezar por 'persist:'
+  let defaultSession = session.defaultSession
   let winState = windowStateKeeper({
     defaultHeight: 600 ,
     defaultWidth: 1200
@@ -68,8 +70,13 @@ function createWindow () {
     },
     // frame: false,
     minWidth: 400,
-    minHeight: 200
+    minHeight: 200,
+    webPreferences: {
+      session: appSession
+    }
   })
+  let mainSession = mainWindow.webContents.session
+  console.log('mainSession ' + mainSession);
   winState.manage(mainWindow)
   childWindow = new BrowserWindow({
     width: 800,
@@ -86,14 +93,32 @@ function createWindow () {
     minHeight: 200
   });
 
+  let secSession = secdWindow.webContents.session
+  console.log('secSession ' + secSession);
+
   console.log(BrowserWindow.getAllWindows());
 
   console.log('Loading index.html into mainWindow')
   // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
+  /*mainWindow.loadFile('index.html')
   childWindow.loadFile('index_child.html')
-  secdWindow.loadFile('index_child.html')
+  secdWindow.loadFile('index_child.html')*/
 
+  mainWindow.loadURL('https://github.com')
+  mainSession.cookies.set({
+    url: 'https://myapp.com',
+    name: 'cookie1',
+    value: 'value',
+    domain:'myapp.com',
+    expirationDate: 99999999
+  },
+    (error) => {
+      console.log('cookies set')
+      mainSession.cookies.get({name: 'cookie1'}, (error, cookies) => {
+        console.log(cookies)
+      })
+    });
+ 
   let mainContents = mainWindow.webContents
 
   console.log(mainContents)
