@@ -4,33 +4,20 @@
     <meta charset="UTF-8">
     <title>Hello World!</title>
     <style>
-      * {
-        cursor: default;
-      }
       body {
         height: 100%;
-        background: red;
-        -webkit-user-select: none;
-        font: caption;
-      }
-      select{
+        background: blue;
       }
     </style>
   </head>
   <body>
-    <h1>HTML Content loaded from index.html</h1>
+    <h1>HTML Content loaded from index_child.html</h1>
     <p>Prueba Reload 1</p>
     <!-- All of the Node.js APIs are available in this renderer process. -->
     We are using Node.js <script>document.write(process.versions.node)</script>,
     Chromium <script>document.write(process.versions.chrome)</script>,
     and Electron <script>document.write(process.versions.electron)</script>.
 
-    <select>
-      <option>1</option>
-      <option>2</option>
-      <option>3</option>
-      <option>4</option>
-    </select>
     <script>
       // You can also require other files to run in this process
       require('./renderer.js')

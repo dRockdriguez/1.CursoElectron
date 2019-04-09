@@ -1,7 +1,7 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow} = require('electron')
 require('electron-reload')(__dirname);
-
+const windowStateKeeper = require('electron-window-state');
 console.log('main.js executing');
 
 const bcrypt = require('bcrypt');
@@ -17,6 +17,8 @@ bcrypt.hash(myPlaintextPassword, saltRounds, function(err, hash) {
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+let childWindow
+let secdWindow
 
 app.setBadgeCount(22);
 // Filesystem paths
@@ -47,20 +49,58 @@ app.on('browser-window-focus', function(e){
 
 function createWindow () {
   console.log('creating mainWindow');
+
+  let winState = windowStateKeeper({
+    defaultHeight: 600 ,
+    defaultWidth: 1200
+  });
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: winState.width,
+    height: winState.height,
+    x: winState.x,
+    y: winState.y, 
     show: true,
     backgroundColor: '#ff0000',
     webPreferences: {
       nodeIntegration: true
-    }
+    },
+    // frame: false,
+    minWidth: 400,
+    minHeight: 200
   })
+  winState.manage(mainWindow)
+  childWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    parent: mainWindow,
+    modal: true,
+    show: false
+  });
+
+  secdWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    minWidth: 400,
+    minHeight: 200
+  });
+
+  console.log(BrowserWindow.getAllWindows());
 
   console.log('Loading index.html into mainWindow')
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
+  childWindow.loadFile('index_child.html')
+  secdWindow.loadFile('index_child.html')
+
+  let mainContents = mainWindow.webContents
+
+  console.log(mainContents)
+  childWindow.once('ready-to-show', () => {
+    childWindow.show();
+  })
+
  /* mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });*/
@@ -77,7 +117,23 @@ function createWindow () {
     // when you should delete the corresponding element.
     mainWindow = null
   })
+
+  secdWindow.on('closed', function () {
+    console.log('secdWindow closed');
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    mainWindow = null
+  })
 }
+
+/*childWindow.on('closed', function () {
+  console.log('childWindow closed');
+  // Dereference the window object, usually you would store windows
+  // in an array if your app supports multi windows, this is the time
+  // when you should delete the corresponding element.
+  childWindow = null
+})*/
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
