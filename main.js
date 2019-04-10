@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, session, dialog } = require('electron')
+const { app, BrowserWindow, session, dialog, globalShortcut, Menu, MenuItem } = require('electron')
 require('electron-reload')(__dirname);
 const windowStateKeeper = require('electron-window-state');
 console.log('main.js executing');
@@ -31,7 +31,7 @@ setTimeout(() => {
   console.log(app.isReady());
 }, 3000)
 
-
+let mainMenu = Menu.buildFromTemplate(require('./contextMenu.js'))
 app.on('before-quit', function(e){
   console.log('App is about to quit');
   e.preventDefault();
@@ -55,8 +55,18 @@ function showDialog(){
     console.log(onePath)
   });
 }
+
+
+
 function createWindow () {
   console.log('creating mainWindow');
+  
+  globalShortcut.register('CommandOrControl+g',() => {
+    console.log('user pressed CommandOrControl+g')
+    globalShortcut.unregister('CommandOrControl+g', () => {
+      console.log('CommandOrControl+g unregistred')
+    });
+  })
 
   let appSession = session.fromPartition('persist:partition1') // Estas sesiones que no son las de por defecto no se persisten por defecto. Para que se persistan su nombre debe empezar por 'persist:'
   let defaultSession = session.defaultSession
@@ -114,6 +124,11 @@ function createWindow () {
   mainWindow.loadFile('index.html')
   childWindow.loadFile('index_child.html')
   secdWindow.loadFile('index_child.html')
+
+  mainWindow.webContents.on('context-menu', (e) => {
+    e.preventDefault()
+    mainMenu.popup()
+  })
 
   // Listen for download
   mainSession.on('will-download', (e, downloadItem, webContets) => {
@@ -195,7 +210,10 @@ function createWindow () {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.on('ready', () => {
+  createWindow()
+  //Menu.setApplicationMenu(mainMenu)
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
