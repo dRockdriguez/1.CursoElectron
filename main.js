@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, session, dialog, globalShortcut, Menu, MenuItem } = require('electron')
+const { app, BrowserWindow, session, dialog, globalShortcut, Menu, MenuItem, Tray } = require('electron')
 require('electron-reload')(__dirname);
 const windowStateKeeper = require('electron-window-state');
 console.log('main.js executing');
@@ -16,10 +16,22 @@ bcrypt.hash(myPlaintextPassword, saltRounds, function(err, hash) {
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+let mainWindow, tray
 let childWindow
 let secdWindow
 
+function createTray(){
+  tray = new Tray('icon.jpg');
+  tray.setToolTip('Tooltip tray guay')
+  const trayMenu = Menu.buildFromTemplate([
+    {label:'Try menu item'},
+    {role: 'quit'}
+  ])
+  //tray.setContextMenu(trayMenu)
+  tray.on('click', () => {
+    mainWindow.isVisible()? mainWindow.hide() : mainWindow.show()
+  })
+}
 app.setBadgeCount(22);
 // Filesystem paths
 console.log(app.getPath('desktop'));
@@ -212,6 +224,13 @@ function createWindow () {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
   createWindow()
+  createTray();
+  electron.powerMonitor.on('suspend', () => {
+    console.log('sleeepepepepepepepeppepe')
+  })
+  electron.powerMonitor.on('resume', () => {
+    console.log('awakekekekek')
+  })
   //Menu.setApplicationMenu(mainMenu)
 })
 
